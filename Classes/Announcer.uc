@@ -1,16 +1,16 @@
 class Announcer extends Mutator
 	config(Announcer);
 
-var config array<string> messages;
-var config int delay;
+var config int Delay;
+var config array<string> Messages;
 
 var int lastMessageIndex;
 
 event PostBeginPlay()
 {
-	if (messages.length > 0)
+	if (Messages.length > 0)
 	{
-		log("Loaded"@messages.length@"announcements.");
+		log("Loaded"@Messages.length@"announcements.");
 	}
 	else
 	{
@@ -21,17 +21,17 @@ event PostBeginPlay()
 
 function MatchStarting()
 {
-	setTimer(delay, true);
+	setTimer(Delay, true);
 }
 
 function Mutate(string MutateString, PlayerController Sender)
 {
 	local int i;
-	if (MutateString ~= "test_announcer")
+	if (MutateString ~= "test_announcer" && (Sender.PlayerReplicationInfo != none && Sender.PlayerReplicationInfo.bAdmin))
 	{
-		for (i = 0; i < messages.length; i++)
+		for (i = 0; i < Messages.length; i++)
 		{
-			broadcastMessage(messages[i]);
+			broadcastMessage(Messages[i]);
 		}
 	}
 	super.Mutate(MutateString, Sender);
@@ -40,17 +40,17 @@ function Mutate(string MutateString, PlayerController Sender)
 function Timer()
 {
 	local int messageid;
-	if (messages.length == 1)
+	if (Messages.length == 1)
 	{
-		broadcastMessage(messages[0]);
+		broadcastMessage(Messages[0]);
 	}
 	else
 	{
 		do {
-			messageId = Rand(messages.length);
+			messageId = Rand(Messages.length);
 		} until(messageId != lastMessageIndex);
 
-		broadcastMessage(messages[messageId]);
+		broadcastMessage(Messages[messageId]);
 		lastMessageIndex = messageid;
 	}
 }
@@ -66,7 +66,7 @@ function broadcastMessage(string message)
 		{
 			if (!(pController.PlayerReplicationInfo.PlayerName ~= "WebAdmin" && pController.PlayerReplicationInfo.PlayerID == 0))
 			{
-				pController.ClientMessage(message, 'Announcer');
+				pController.teamMessage(none, message, 'Announcer');
 			}
 		}
 	}
@@ -78,5 +78,5 @@ defaultproperties
 	FriendlyName="Server announcer"
 	Description="Sending automatic chat message to all players."
 
-	delay = 300;
+	Delay = 300;
 }
